@@ -44,7 +44,7 @@ export const POST = async (request: Request) => {
           : "500 | Ocurrió un error al crear el usuario",
         error,
       },
-      { status: 500 }
+      { status: 400 }
     );
   }
 };

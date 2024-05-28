@@ -9,7 +9,7 @@ export const generateAccessToken = async (userId: string) => {
     }
 
     const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_MOVIL, {
-      expiresIn: "15m",
+      expiresIn: "5h",
     });
 
     return accessToken;
@@ -30,7 +30,7 @@ export const generateRefreshToken = async (userId: string) => {
     const refreshToken = jwt.sign(
       payload,
       process.env.JWT_REFRESH_TOKEN_MOVIL,
-      { expiresIn: "1h" }
+      { expiresIn: "15d" }
     );
 
     return refreshToken;
