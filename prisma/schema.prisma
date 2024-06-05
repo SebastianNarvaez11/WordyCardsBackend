@@ -14,54 +14,47 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String     @unique
   password  String
   image     String?
-  isActive  Boolean  @default(true)
-  deleted   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updateAt  DateTime @updatedAt
-  ratings   Rating[]
+  isActive  Boolean    @default(true)
+  deleted   Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updateAt  DateTime   @updatedAt
   groups    Group[]
+  exercises Exercise[]
 
   @@index([deleted, isActive])
 }
 
-model Word {
+model Group {
+  id                           String   @id @default(uuid())
+  name                         String
+  iconName                     String?
+  maxNumberOfExercisesPerRound Float    @default(20)
+  deleted                      Boolean  @default(false)
+  createdAt                    DateTime @default(now())
+  updateAt                     DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  exercises Exercise[]
+}
+
+model Exercise {
   id                 String   @id @default(uuid())
   englishWord        String
-  spanishTranslation String?
+  spanishTranslation String
+  rating             Float    @default(0)
+  image              String?
   deleted            Boolean  @default(false)
   createdAt          DateTime @default(now())
   updateAt           DateTime @updatedAt
 
-  ratings Rating[]
-  groups  Group[]  @relation("GroupToWord")
-}
-
-model Rating {
-  id        String   @id @default(uuid())
-  rating    Float    @default(0)
-  deleted   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updateAt  DateTime @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  word   Word   @relation(fields: [wordId], references: [id], onDelete: Cascade)
-  wordId String
-}
-
-model Group {
-  id        String   @id @default(uuid())
-  name      String
-  deleted   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updateAt  DateTime @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  words  Word[] @relation("GroupToWord")
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
 }
