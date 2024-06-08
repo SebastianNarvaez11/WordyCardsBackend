@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
 import { ExerciseUpdateValidationSchema } from "@/validations";
-
-interface IPayload {
-  id: string;
-  iat: number;
-  exp: number;
-}
-
+import { validateToken } from "@/helpers";
 interface Segments {
   params: {
     id: string;
@@ -16,23 +9,12 @@ interface Segments {
 }
 export const PUT = async (request: Request, { params }: Segments) => {
   try {
-    const accessToken = request.headers.get("authorization");
-
-    if (!accessToken) throw new Error("No hay token");
-
-    const { id } = jwt.verify(
-      accessToken.split(" ")[1],
-      process.env.JWT_ACCESS_TOKEN_MOVIL || ""
-    ) as IPayload;
-
-    const user = await prisma.user.findUnique({ where: { id: id } });
-    if (!user) throw new Error("Usuario no existe");
+    const userId = await validateToken(request);
+    if (!userId) return NextResponse.json({}, { status: 401 });
 
     const { id: exerciseId } = params;
 
     const body = await request.json();
-
-    console.log(body);
 
     const { data, success, error } =
       ExerciseUpdateValidationSchema.safeParse(body);
@@ -52,7 +34,7 @@ export const PUT = async (request: Request, { params }: Segments) => {
     }
 
     const updatedExercise = await prisma.exercise.update({
-      where: { id: exerciseId, userId: user.id, deleted: false },
+      where: { id: exerciseId, userId: userId, deleted: false },
       data: {
         rating: data.rating ?? exercise.rating,
         englishWord: data.englishWord || exercise.englishWord,

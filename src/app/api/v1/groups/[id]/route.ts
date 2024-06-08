@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
 import { sleep } from "@/utils";
-import { selectIdealExercises } from "@/helpers";
-
-interface IPayload {
-  id: string;
-  iat: number;
-  exp: number;
-}
+import { selectIdealExercises, validateToken } from "@/helpers";
 
 interface Segments {
   params: {
@@ -17,22 +10,13 @@ interface Segments {
 }
 export const GET = async (request: Request, { params }: Segments) => {
   try {
-    const accessToken = request.headers.get("authorization");
-
-    if (!accessToken) throw new Error("No hay token");
-
-    const { id } = jwt.verify(
-      accessToken.split(" ")[1],
-      process.env.JWT_ACCESS_TOKEN_MOVIL || ""
-    ) as IPayload;
-
-    const user = await prisma.user.findUnique({ where: { id: id } });
-    if (!user) throw new Error("Usuario no existe");
+    const userId = await validateToken(request);
+    if (!userId) return NextResponse.json({}, { status: 401 });
 
     const { id: groupId } = params;
 
     const group = await prisma.group.findUnique({
-      where: { id: groupId, userId: user.id, deleted: false },
+      where: { id: groupId, userId: userId, deleted: false },
       select: {
         id: true,
         name: true,
@@ -67,14 +51,19 @@ export const GET = async (request: Request, { params }: Segments) => {
       where: { groupId: group.id, rating: 0 },
     });
 
+    const { searchParams } = new URL(request.url);
+    const areAll = searchParams.get("all-exercises");
+
     return NextResponse.json(
       {
         group: {
           ...group,
-          exercises: selectIdealExercises(
-            group.exercises,
-            group.maxNumberOfExercisesPerRound
-          ),
+          exercises: areAll
+            ? group.exercises
+            : selectIdealExercises(
+                group.exercises,
+                group.maxNumberOfExercisesPerRound
+              ),
         },
         countEasy,
         countMedium,

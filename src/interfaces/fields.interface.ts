@@ -16,3 +16,23 @@ export interface IUpdateExerciseFormFields {
   rating?: number;
   groupId?: string;
 }
+export interface ICreateExerciseFormFields {
+  id?: string;
+  englishWord: string;
+  spanishTranslation: string;
+  image?: string | null;
+}
+
+export interface ICreateGroupFormFields {
+  name: string;
+  iconName: string;
+  maxNumberOfExercisesPerRound: string;
+  exercises: ICreateExerciseFormFields[];
+}
+
+export interface IUpdateGroupFormFields {
+  name?: string;
+  iconName?: string;
+  maxNumberOfExercisesPerRound?: string;
+  exercises?: ICreateExerciseFormFields[];
+}

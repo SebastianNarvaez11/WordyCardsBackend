@@ -1,6 +1,6 @@
 import { ZodType, z } from "zod";
 
-import { IUpdateExerciseFormFields } from "../interfaces";
+import { ICreateExerciseFormFields, IUpdateExerciseFormFields } from "../interfaces";
 
 export const ExerciseUpdateValidationSchema: ZodType<IUpdateExerciseFormFields> =
   z.object({
@@ -21,4 +21,22 @@ export const ExerciseUpdateValidationSchema: ZodType<IUpdateExerciseFormFields> 
       .max(2, { message: "La calificación maxima es 2" })
       .optional(),
     groupId: z.string().optional(),
+  });
+
+
+  export const ExerciseCreateValidationSchema: ZodType<ICreateExerciseFormFields> =
+  z.object({
+    id: z.string().optional(),
+
+    englishWord: z
+      .string()
+      .min(1, {message: 'Este campo es requerido'})
+      .max(32, {message: 'El máximo de caracteres es de 32'}),
+
+    spanishTranslation: z
+      .string()
+      .min(1, {message: 'Este campo es requerido'})
+      .max(32, {message: 'El máximo de caracteres es de 32'}),
+
+    image: z.string().optional().nullable(),
   });

@@ -1,26 +1,13 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
-
-interface IPayload {
-  id: string;
-  iat: number;
-  exp: number;
-}
+import { validateToken } from "@/helpers";
 
 export const GET = async (request: Request) => {
   try {
-    const accessToken = request.headers.get("authorization");
+    const userId = await validateToken(request);
+    if (!userId) return NextResponse.json({}, { status: 401 });
 
-    if (!accessToken) throw new Error("No hay token ");
-
-    const { id } = jwt.verify(
-      accessToken.split(" ")[1],
-      process.env.JWT_ACCESS_TOKEN_MOVIL || ""
-    ) as IPayload;
-
-    const user = await prisma.user.findUnique({ where: { id: id } });
-
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error("Usuario no existe");
 
     const { password, createdAt, updateAt, ...rest } = user;
